@@ -1,6 +1,6 @@
 # Respostas
 
-Nome:
+Nome: KAUA BARCELOS DE MORAIS
 
 Como responder: nas questões objetivas, escreva a letra depois de **Resposta:**. A justificativa é opcional, mas ajuda na correção. Nas discursivas, escreva seu texto logo abaixo do enunciado.
 
@@ -37,10 +37,10 @@ C) A asserção I é uma proposição verdadeira, e a II é uma proposição fal
 D) A asserção I é uma proposição falsa, e a II é uma proposição verdadeira.
 E) As asserções I e II são proposições falsas.
 
-**Resposta:**
+**Resposta:** A
 
 **Justificativa (opcional):**
-
+O controller recebe o service pelo construtor (injeção de dependência). Isso o desacopla da implementação concreta, e o `server.ts` decide o que entregar, inclusive um service falso em teste. A II justifica a I.
 ---
 
 ### Questão 2
@@ -66,10 +66,10 @@ C) `const company = db.prepare('SELECT * FROM companies WHERE id = ' + companyId
 D) `res.send(\`<h1>${name} created</h1>\`)`
 E) `const net = gross - gross * 0.11`
 
-**Resposta:**
+**Resposta:** E
 
 **Justificativa (opcional):**
-
+`gross - gross * 0.11` é o cálculo do INSS, uma regra de negócio. O `req.body` é do Controller, a checagem de `@` é do DTO, o SQL é do Repository e o `res.send` é da apresentação.
 ---
 
 ### Questão 3
@@ -94,9 +94,10 @@ C) II e IV, apenas.
 D) I, II e IV, apenas.
 E) I, II, III e IV.
 
-**Resposta:**
+**Resposta:** D
 
 **Justificativa (opcional):**
+Formato (e-mail com `@`) é DTO/Controller e responde 400. Salário mínimo é regra de negócio, fica no Service e responde 422, e valeria até numa planilha. A III é falsa: o Repository só persiste, não valida.
 
 ---
 
@@ -128,9 +129,10 @@ C) II, apenas.
 D) II e III, apenas.
 E) I, II e III.
 
-**Resposta:**
+**Resposta:** B
 
 **Justificativa (opcional):**
+I: CSV é só nova apresentação, e o Service e os repositórios são reaproveitados. II: a alíquota por estado é regra de negócio e fica em `employee.service.ts`. III é falsa: o service não conhece HTTP nem JSON, quem responde é o controller.
 
 ---
 
@@ -152,9 +154,10 @@ C) A asserção I é uma proposição verdadeira, e a II é uma proposição fal
 D) A asserção I é uma proposição falsa, e a II é uma proposição verdadeira.
 E) As asserções I e II são proposições falsas.
 
-**Resposta:**
+**Resposta:** C
 
 **Justificativa (opcional):**
+I é verdadeira: na rota monolítica tudo está misturado, então qualquer pedido mexe nela. II é falsa: o TypeScript confere tipos, mas não impede que uma mudança de regra quebre o comportamento de outra parte, e não é a causa do problema descrito na I.
 
 ---
 
@@ -171,6 +174,11 @@ c) cite os arquivos do seu projeto que seriam alterados para atendê-lo.
 (Até 10 linhas.)
 
 **Resposta:**
+a) O pedido (b): aplicar uma alíquota de INSS diferente por estado.
+
+b) Os pedidos (a) e (c) só criam novas formas de apresentar ou consumir dados que o Service já entrega (CSV é outro formato de saída, e a API já responde JSON). O pedido (b) muda uma regra de negócio: é preciso definir a tabela de alíquotas por UF, decidir o que fazer com estados sem faixa e como tratar funcionários já cadastrados, cujo `net_salary` foi calculado com 11%. As camadas mostram onde mexer, mas não decidem essas regras nem eliminam o trabalho de implementá-las e testá-las.
+
+c) `src/services/employee.service.ts` (a constante `INSS_RATE` vira uma consulta por UF, usando o `state` obtido por `companies.findById`). Se as faixas vierem do banco, também `src/repositories/company.repository.ts` ou um novo repository, e `src/types.ts`. Nenhum controller muda.
 
 ---
 
@@ -187,3 +195,8 @@ c) descreva como você corrigiu, ou como corrigiria.
 (Até 10 linhas.)
 
 **Resposta:**
+a) O erro em que cheguei mais perto foi "erro tratado em cada rota".
+
+b) Em `src/controllers/employee.controller.ts` e `src/controllers/company.controller.ts`, ao tratar empresa inexistente ou dados inválidos, a tentação era escrever `res.status(404)` ou `res.status(400)` direto no `catch` de cada método.
+
+c) Corrigi fazendo o service lançar `NotFound` e `RuleViolation` e o DTO lançar `InvalidInput`. Os controllers apenas chamam `next(error)`, e `src/middlewares/error.middleware.ts` é o único lugar que converte cada erro de domínio em 400, 404 ou 422.
